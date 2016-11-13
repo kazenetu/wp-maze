@@ -1,0 +1,67 @@
+<html>
+
+<head>
+  <script src="jquery.min.js"></script>
+</head>
+
+<body>
+  <div id="inputScreen">
+    <div>
+      W:<input type="number" id="width" value="10"> 
+      H:<input type="number" id="height" value="10">
+    </div>
+    <button id="create">Create</button>
+    <button id="load">Load</button>
+  </div>
+
+  <div id="editorScreen" style="display:none;">
+
+  </div>
+
+  <script>
+      (function(){
+        var mapData = null;
+        var width = 0;
+        var height = 0;
+
+        function initMapData(width,height){
+          mapData = new Array(height);
+          for(var y=0;y<height;y++){
+            mapData[y] = new Array(width);
+            for(var x=0;x<width;x++){
+              mapData[y][x] = 0;
+            }
+          }
+        }
+
+        function createEditorScreen(){
+          var mapHtml = $("<div>");
+
+          for(var y=0;y<height;y++){
+            var div =  $("<div>");
+            for(var x=0;x<width;x++){
+              var checkbox =  $('<input type="checkbox">');
+              if(mapData[y][x] != 0){
+                checkbox.attr("checked","checked");
+              }
+              div.append(checkbox)
+            }
+            mapHtml.append(div);
+          }
+          $("#editorScreen").html(mapHtml);
+        }
+
+        $("#create").on("click",function(){
+          width = $("#width").val();
+          height =$("#height").val();
+          initMapData(width,height);
+          createEditorScreen();
+
+          $("#inputScreen").hide();
+          $("#editorScreen").show();
+        });
+      })();
+    </script>
+</body>
+
+</html>
