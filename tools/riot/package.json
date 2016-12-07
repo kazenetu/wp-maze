@@ -1,0 +1,13 @@
+{
+	"name": "riot-sample",
+	"version": "1.0.0",
+	"description": "riot-sample",
+	"author": "kazenetu",
+	"url": "https://github.com/kazenetu/riot-sample",
+	"license": "MIT License",
+	"keywords": ["riot.js"],
+	"devDependencies":{
+		"gulp": "*",
+		"gulp-webserver": "*"
+	}
+}
