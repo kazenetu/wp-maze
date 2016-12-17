@@ -1,9 +1,9 @@
 {
-	"name": "riot-sample",
+	"name": "riot_mapeditor",
 	"version": "1.0.0",
-	"description": "riot-sample",
+	"description": "riot_mapeditor",
 	"author": "kazenetu",
-	"url": "https://github.com/kazenetu/riot-sample",
+	"url": "https://github.com/kazenetu/wp-maze/tools/riot_mapeditor",
 	"license": "MIT License",
 	"keywords": ["riot.js"],
 	"devDependencies":{
