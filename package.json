@@ -1,0 +1,11 @@
+{
+	"devDependencies":{
+		"gulp": "*",
+		"typescript": "*",
+		"gulp-typescript": "*",
+		"gulp-webserver": "*"
+	},
+	"scripts": {
+		"build": "gulp default"
+	}
+}
