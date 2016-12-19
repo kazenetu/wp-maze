@@ -1,15 +1,20 @@
 enchant();
 
 let screenWidth = 640;
-let screenHeight = 640;
+let screenHeight = 480;
 
 // Start
 var game = new enchant.Core(screenWidth, screenHeight);
 game.fps = 30;
-game.preload(['./assets/resources/map.png','./assets/resources/buttons.png', './assets/resources/map1.json']);
+game.preload(['./assets/resources/goal.png', './assets/resources/number.png', './assets/resources/map.png', './assets/resources/buttons.png', './assets/resources/map1.json']);
 
 // ロード完了イベント
 game.onload = function () {
+
+    enum GameMode {
+        main,
+        goal
+    };
 
     const scale = 2;
     const tipSize = 32;
@@ -17,6 +22,10 @@ game.onload = function () {
     const displayW = 10;
     const displayH = 4;
 
+    const manualMainMode = "ゴール(G)まで移動してください　";
+    const manualGoalMode = "タップしてください　";
+
+    let gameMode = GameMode.main;
 
     let mainPanel = new enchant.Group();
     game.currentScene.addChild(mainPanel);
@@ -24,13 +33,27 @@ game.onload = function () {
     // CreateStage
     let stage = new enchant.Group();
     mainPanel.addChild(stage);
+    let stagebg: enchant.Sprite = new enchant.Sprite(screenWidth, screenHeight);
+    stagebg.backgroundColor = "rgb(128,128,128)";
+    stage.addChild(stagebg);
+    let wpMazeLogo = new enchant.Label("WpMaze");
+    wpMazeLogo.font = "32px cursive";
+    stage.addChild(wpMazeLogo);
+    let manual = new enchant.Label(manualMainMode);
+    manual.width = screenWidth;
+    manual.font = "32px cursive";
+    manual.textAlign = "right";
+    manual.y = 16;
+    stage.addChild(manual);
+
 
     // CreateGroup
     let group = new enchant.Group();
+    group.y = 64;
     stage.addChild(group);
 
     //背景インスタンス作成
-    var surface: enchant.Sprite = new enchant.Sprite(displayW * tipSize * scale, displayH * tipSize * scale);
+    let surface: enchant.Sprite = new enchant.Sprite(displayW * tipSize * scale, displayH * tipSize * scale);
     surface.image = new enchant.Surface(surface.width, surface.height);
     surface.image.context.beginPath();
     surface.image.context.fillStyle = "rgb(157,166,97)";
@@ -109,12 +132,15 @@ game.onload = function () {
     redrawMapCanvas();
 
     // ボタン作成
-    let inputUp=false,inputDown=false,inputLeft=false,inputRight=false;
+    let buttonGroup = new enchant.Group();
+    buttonGroup.y = displayH * tipSize * scale + 32;
+    group.addChild(buttonGroup);
+    let inputUp = false, inputDown = false, inputLeft = false, inputRight = false;
     let buttonImages = game.assets['./assets/resources/buttons.png'];
-    let createButton = (initFrame:number,touchFrame:number,setInputFlag:(value)=>void)=>{
-        let button = new enchant.Sprite(32,32);
+    let createButton = (initFrame: number, touchFrame: number, setInputFlag: (value) => void) => {
+        let button = new enchant.Sprite(32, 32);
         button.touchEnabled = true;
-        button.scale(2,2);
+        button.scale(2, 2);
         button.image = buttonImages;
         button.frame = initFrame;
         button.on(enchant.Event.TOUCH_START, (e: any) => {
@@ -125,54 +151,96 @@ game.onload = function () {
             button.frame = initFrame;
             setInputFlag(false);
         });
-        group.addChild(button);
+        buttonGroup.addChild(button);
         return button;
     };
-    let upButon = createButton(0,4,(value)=>{inputUp=value;});
-    upButon.x = screenWidth/2;
-    upButon.y = (displayH+1)*tipSize * scale;
-    let downButon = createButton(1,5,(value)=>{inputDown=value;});
-    downButon.x = screenWidth/2;
-    downButon.y = (displayH+2)*tipSize * scale;
-    let rightButon = createButton(2,6,(value)=>{inputRight=value;});
-    rightButon.x = screenWidth/2+tipSize * scale;
-    rightButon.y = (displayH+2)*tipSize * scale;
-    let leftButon = createButton(3,7,(value)=>{inputLeft=value;});
-    leftButon.x = screenWidth/2-tipSize * scale;
-    leftButon.y = (displayH+2)*tipSize * scale;
+    let upButon = createButton(0, 4, (value) => { inputUp = value; });
+    upButon.x = screenWidth / 2;
+    upButon.y = 0;
+    let downButon = createButton(1, 5, (value) => { inputDown = value; });
+    downButon.x = screenWidth / 2;
+    downButon.y = 1 * tipSize * scale;
+    let rightButon = createButton(2, 6, (value) => { inputRight = value; });
+    rightButon.x = screenWidth / 2 + tipSize * scale;
+    rightButon.y = 1 * tipSize * scale;
+    let leftButon = createButton(3, 7, (value) => { inputLeft = value; });
+    leftButon.x = screenWidth / 2 - tipSize * scale;
+    leftButon.y = 1 * tipSize * scale;
+
+    // ゴール
+    let goalGroup = new enchant.Group();
+    let goalImage = game.assets['./assets/resources/goal.png'];
+    let numberImage = game.assets['./assets/resources/number.png'];
+    let goalSprite: enchant.Sprite = new enchant.Sprite(displayW * tipSize * scale, displayH * tipSize * scale);
+    goalSprite.image = new enchant.Surface(goalSprite.width, goalSprite.height);
+    goalSprite.touchEnabled = true;
+    goalGroup.addChild(goalSprite);
+    let drawGoal = () => {
+        goalSprite.image.context.beginPath();
+        goalSprite.image.context.fillStyle = "rgb(157,166,97)";
+        goalSprite.image.context.rect(0, 0, goalSprite.width, goalSprite.height);
+        goalSprite.image.context.fill();
+        goalSprite.image.draw(goalImage, 0, 0, 128, 64,
+            96, 64, 96 * scale, 64 * scale);
+        let walkCount = logic.WalkCount.toString(10);
+        for (let numIndex: number = 0; numIndex < walkCount.length; numIndex++) {
+            let numberX = parseInt(walkCount[numIndex]);
+
+            goalSprite.image.draw(numberImage, 16 * numberX, 0, 16, 32,
+                96 + 96 * scale + (16 * numIndex) * scale, 64 + 32 * scale, 16 * scale, 32 * scale);
+        }
+    };
+
+    goalSprite.on(enchant.Event.TOUCH_START, (e) => {
+        group.removeChild(goalGroup);
+        gameMode = GameMode.main;
+        logic.Reset();
+        manual.text = manualMainMode;
+    });
+
 
     let waitCount = 0;
     game.on(enchant.Event.ENTER_FRAME, function () {
-        let addX = 0;
-        let addY = 0;
-        if (game.input.up || inputUp) {
-            addX = 0;
-            addY = -1;
-        }
-        if (game.input.down || inputDown) {
-            addX = 0;
-            addY = 1;
-        }
-        if (game.input.left || inputLeft) {
-            addX = -1;
-            addY = 0;
-        }
-        if (game.input.right || inputRight) {
-            addX = 1;
-            addY = 0;
-        }
-
-        if (addX != 0 || addY != 0) {
-            waitCount--;
-            if (waitCount <= 0) {
-                waitCount = 5;
-                let result = logic.Move(addX, addY);
+        if (gameMode === GameMode.main) {
+            let addX = 0;
+            let addY = 0;
+            if (game.input.up || inputUp) {
+                addX = 0;
+                addY = -1;
             }
-        } else {
-            waitCount = 0;
+            if (game.input.down || inputDown) {
+                addX = 0;
+                addY = 1;
+            }
+            if (game.input.left || inputLeft) {
+                addX = -1;
+                addY = 0;
+            }
+            if (game.input.right || inputRight) {
+                addX = 1;
+                addY = 0;
+            }
+
+            if (addX != 0 || addY != 0) {
+                waitCount--;
+                if (waitCount <= 0) {
+                    waitCount = 5;
+                    let result = logic.Move(addX, addY);
+                    if (result == WpMaze.MoveResult.goal) {
+                        group.addChild(goalGroup);
+                        gameMode = GameMode.goal;
+                        manual.text = manualGoalMode;
+                    }
+                }
+            } else {
+                waitCount = 0;
+            }
+            // 再描画
+            redrawMapCanvas();
         }
-        // 再描画
-        redrawMapCanvas();
+        if (gameMode === GameMode.goal) {
+            drawGoal();
+        }
     });
 
 };

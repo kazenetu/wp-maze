@@ -4,11 +4,11 @@ namespace WpMaze {
      * 移動結果
      * @memberof WpMaze
      */
-    export enum MoveResult{
-            Moved
-            ,obst
-            ,goal
-        };
+    export enum MoveResult {
+        Moved
+        , obst
+        , goal
+    };
 
     /**
      * ロジック
@@ -67,7 +67,7 @@ namespace WpMaze {
          * マップ幅
          * @returns マップの幅
          */
-        public get MapWidth() {
+        public get MapWidth():number {
             return this.mapWidth;
         }
 
@@ -75,7 +75,7 @@ namespace WpMaze {
          * マップ高さ
          * @returns マップの高さ
          */
-        public get MapHeight() {
+        public get MapHeight():number {
             return this.mapHeight;
         }
 
@@ -83,8 +83,16 @@ namespace WpMaze {
          * 現在位置
          * @returns 現在位置
          */
-        public get NowPos() {
+        public get NowPos():{x,y} {
             return { x: this.nowPos[0], y: this.nowPos[1] };
+        }
+
+        /**
+         * 歩数
+         * @returns 歩数
+         */
+        public get WalkCount():number {
+            return this.walkCount;
         }
 
         /**
@@ -187,18 +195,27 @@ namespace WpMaze {
             }
 
             // 移動結果を反映
-            this.nowPos = [x,y];
+            this.nowPos = [x, y];
 
             // 歩数をインクリメントする
             this.walkCount++;
 
             // ゴールにたどり着いたらtrueを返す
-            if (x === this.goalPos[0] || y === this.goalPos[1]) {
+            if (x === this.goalPos[0] && y === this.goalPos[1]) {
                 return MoveResult.goal;
             }
 
             return MoveResult.Moved;
         }
 
+        /**
+        * 現在位置をスタート位置に戻す
+        * @method
+        * @name WpMaze.Logic#Reset
+        */
+        public Reset(): void {
+            this.nowPos = this.startPos;
+            this.walkCount = 0;
+        }
     }
 }

@@ -62,6 +62,17 @@ var WpMaze;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Logic.prototype, "WalkCount", {
+            /**
+             * 歩数
+             * @returns 歩数
+             */
+            get: function () {
+                return this.walkCount;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * マップデータのロード
          * @method
@@ -144,10 +155,19 @@ var WpMaze;
             // 歩数をインクリメントする
             this.walkCount++;
             // ゴールにたどり着いたらtrueを返す
-            if (x === this.goalPos[0] || y === this.goalPos[1]) {
+            if (x === this.goalPos[0] && y === this.goalPos[1]) {
                 return MoveResult.goal;
             }
             return MoveResult.Moved;
+        };
+        /**
+        * 現在位置をスタート位置に戻す
+        * @method
+        * @name WpMaze.Logic#Reset
+        */
+        Logic.prototype.Reset = function () {
+            this.nowPos = this.startPos;
+            this.walkCount = 0;
         };
         return Logic;
     }());
