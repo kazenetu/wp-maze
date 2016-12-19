@@ -155,5 +155,9 @@ var WpMaze;
      * 障害物文字列
      */
     Logic.Obstacle = "X";
+    /**
+     * ゴール文字列
+     */
+    Logic.Goal = "G";
     WpMaze.Logic = Logic;
 })(WpMaze || (WpMaze = {}));

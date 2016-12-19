@@ -24,6 +24,11 @@ namespace WpMaze {
         public static Obstacle: string = "X";
 
         /**
+         * ゴール文字列
+         */
+        public static Goal: string = "G";
+
+        /**
          * マップデータ
          */
         private mapData: string[][] | null;
